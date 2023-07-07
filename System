@@ -1,0 +1,17 @@
+def ensure_session_manager_plugin():
+    session_manager_dir = os.path.join(config.user_config_dir, "bin")
+    PATH = os.environ.get("PATH", "") + ":" + session_manager_dir
+    if shutil.which("session-manager-plugin", path=PATH):
+        subprocess.check_call(["session-manager-plugin"], env=dict(os.environ, PATH=PATH))
+    else:
+        os.makedirs(session_manager_dir, exist_ok=True)
+        target_path = os.path.join(session_manager_dir, "session-manager-plugin")
+        if platform.system() == "Darwin":
+            download_session_manager_plugin_macos(target_path=target_path)
+        elif platform.linux_distribution()[0] == "Ubuntu":
+            download_session_manager_plugin_linux(target_path=target_path)
+        else:
+            download_session_manager_plugin_linux(target_path=target_path, pkg_format="rpm")
+        os.chmod(target_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
+        subprocess.check_call(["session-manager-plugin"], env=dict(os.environ, PATH=PATH))
+    return shutil.which("session-manager-plugin", path=PATH) 
